@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Medical Records</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            margin: 0;
+            padding: 30px 16px;
+            color: #263238;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #087f8c;
+            color: white;
+            padding: 11px 16px;
+            text-decoration: none;
+            border-radius: 7px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .record {
+            background: white;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #00000010;
+        }
+
+        .record h3 {
+            margin-top: 0;
+            color: #087f8c;
+        }
+
+        .messages {
+            padding: 12px;
+            background: #e4f7e9;
+            border-radius: 7px;
+            margin-bottom: 15px;
+        }
+
+        .empty {
+            background: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+        }
+
+        .back {
+            color: #087f8c;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <div class="header">
+        <div>
+            <h1>📋 My Medical Records</h1>
+            <p>View your medical reports and health history.</p>
+        </div>
+
+        <a class="btn" href="{% url 'upload_medical_record' %}">
+            + Upload Report
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="messages">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    {% for record in records %}
+        <div class="record">
+            <h3>{{ record.title }}</h3>
+
+            <p><strong>Report Type:</strong> {{ record.record_type }}</p>
+            <p><strong>Report Date:</strong> {{ record.report_date|date:"d M Y" }}</p>
+
+            {% if record.description %}
+                <p><strong>Description:</strong> {{ record.description }}</p>
+            {% endif %}
+
+            {% if record.file %}
+                <p>
+                    <a href="{% url 'download_medical_record' record.id %}">
+                        View / Download Report
+                    </a>
+                </p>
+            {% endif %}
+        </div>
+    {% empty %}
+        <div class="empty">
+            <h3>No medical records yet</h3>
+            <p>Upload your first medical report to get started.</p>
+            <a class="btn" href="{% url 'upload_medical_record' %}">
+                Upload Your First Report
+            </a>
+        </div>
+    {% endfor %}
+
+    <p>
+        <a class="back" href="{% url 'dashboard' %}">
+            ← Back to Dashboard
+        </a>
+    </p>
+
+</div>
+</body>
+</html>

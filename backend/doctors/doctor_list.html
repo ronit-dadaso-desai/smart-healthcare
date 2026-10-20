@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Doctors | Smart Healthcare</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f7fb;
+            color: #243247;
+        }
+
+        header {
+            background: #087f8c;
+            color: white;
+            padding: 22px 8%;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 27px;
+        }
+
+        header p {
+            margin-bottom: 0;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .page-heading {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .page-heading h2 {
+            color: #087f8c;
+            font-size: 30px;
+        }
+
+        .doctor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 22px;
+        }
+
+        .doctor-card {
+            background: white;
+            padding: 24px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+            border-top: 4px solid #087f8c;
+        }
+
+        .doctor-card h3 {
+            margin-top: 0;
+            color: #087f8c;
+        }
+
+        .specialization {
+            display: inline-block;
+            background: #e1f5f5;
+            color: #087f8c;
+            padding: 7px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .detail {
+            margin: 13px 0;
+            line-height: 1.5;
+        }
+
+        .fee {
+            font-size: 19px;
+            font-weight: bold;
+            color: #16804a;
+        }
+
+        .empty-state {
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: #087f8c;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            padding: 22px;
+            color: #667085;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Smart Healthcare</h1>
+    <p>Your health, our priority.</p>
+</header>
+
+<main class="container">
+    <div class="page-heading">
+        <h2>Available Doctors</h2>
+        <p>Find a doctor who matches your healthcare needs.</p>
+    </div>
+
+    {% if doctors %}
+        <div class="doctor-grid">
+            {% for doctor in doctors %}
+                <article class="doctor-card">
+                    <h3>Dr. {{ doctor.name }}</h3>
+
+                    <span class="specialization">
+                        {{ doctor.specialization }}
+                    </span>
+
+                    <p class="detail">
+                        <strong>Qualification:</strong>
+                        {{ doctor.qualification }}
+                    </p>
+
+                    <p class="detail">
+                        <strong>Experience:</strong>
+                        {{ doctor.experience_years }} years
+                    </p>
+
+                    <p class="fee">
+                        Consultation Fee: ₹{{ doctor.consultation_fee }}
+                    </p>
+
+                    {% if doctor.about %}
+                        <p class="detail">{{ doctor.about }}</p>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <h3>No doctors available right now</h3>
+            <p>Please check again later.</p>
+        </div>
+    {% endif %}
+
+    <a class="back-link" href="/">← Back to Home</a>
+</main>
+
+<footer>
+    © Smart Healthcare Platform
+</footer>
+
+</body>
+</html>

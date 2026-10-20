@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Upload Medical Report</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            margin: 0;
+            padding: 30px 16px;
+            color: #263238;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: white;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #00000010;
+        }
+
+        h1 {
+            color: #087f8c;
+        }
+
+        label {
+            display: block;
+            margin-top: 18px;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 11px;
+            border: 1px solid #ccd5df;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button {
+            margin-top: 22px;
+            background: #087f8c;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 20px;
+            color: #087f8c;
+            text-decoration: none;
+        }
+
+        .error {
+            color: #b42318;
+            margin-top: 8px;
+        }
+
+        .help {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>📄 Upload Medical Report</h1>
+    <p>Add your medical report to your personal health records.</p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="error">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <label for="{{ form.title.id_for_label }}">Report Title</label>
+        {{ form.title }}
+        {{ form.title.errors }}
+
+        <label for="{{ form.record_type.id_for_label }}">Report Type</label>
+        {{ form.record_type }}
+        {{ form.record_type.errors }}
+
+        <label for="{{ form.report_date.id_for_label }}">Report Date</label>
+        {{ form.report_date }}
+        {{ form.report_date.errors }}
+
+        <label for="{{ form.description.id_for_label }}">Description (Optional)</label>
+        {{ form.description }}
+        {{ form.description.errors }}
+
+        <label for="{{ form.file.id_for_label }}">Select Report File</label>
+        {{ form.file }}
+        <p class="help">Allowed formats: PDF, JPG, JPEG, PNG. Maximum size: 5 MB.</p>
+        {{ form.file.errors }}
+
+        <button type="submit">Upload Report</button>
+    </form>
+
+    <a class="back" href="{% url 'medical_records' %}">
+        ← Back to Medical Records
+    </a>
+
+</div>
+</body>
+</html>

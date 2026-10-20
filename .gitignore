@@ -1,0 +1,27 @@
+﻿.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# Secrets and local settings
+secrets.json
+.env.local
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Backup files
+*_backup.py
+*_backup.html

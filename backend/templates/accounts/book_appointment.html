@@ -1,0 +1,139 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment | Smart Healthcare</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            text-align: center;
+            color: #0f766e;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin: 14px 0 7px;
+            font-weight: bold;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: 2px solid #99f6e4;
+            border-color: #0f766e;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 13px;
+            background: #0f766e;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #115e59;
+        }
+
+        .errorlist {
+            color: #dc2626;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        a {
+            color: #0f766e;
+            text-decoration: none;
+            margin: 0 8px;
+        }
+
+        .messages {
+            color: #15803d;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Book an Appointment</h1>
+        <p class="subtitle">Schedule your healthcare consultation</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <p class="messages">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            {{ form.non_field_errors }}
+
+            <label for="{{ form.doctor.id_for_label }}">Select Doctor</label>
+            {{ form.doctor }}
+            {{ form.doctor.errors }}
+
+            <label for="{{ form.appointment_date.id_for_label }}">Appointment Date</label>
+            {{ form.appointment_date }}
+            {{ form.appointment_date.errors }}
+
+            <label for="{{ form.appointment_time.id_for_label }}">Appointment Time</label>
+            {{ form.appointment_time }}
+            {{ form.appointment_time.errors }}
+
+            <label for="{{ form.reason.id_for_label }}">Reason for Appointment</label>
+            {{ form.reason }}
+            {{ form.reason.errors }}
+
+            <button type="submit">Book Appointment</button>
+        </form>
+
+        <div class="links">
+            <a href="{% url 'my_appointments' %}">My Appointments</a>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>
+```

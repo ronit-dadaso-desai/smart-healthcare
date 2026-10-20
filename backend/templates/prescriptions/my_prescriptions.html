@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Prescriptions</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7fb; margin: 0; padding: 30px; }
+        .container { max-width: 900px; margin: auto; }
+        h1 { color: #1f3b57; }
+        .card, .empty { background: white; padding: 20px; margin: 15px 0; border-radius: 10px; box-shadow: 0 2px 8px #0001; }
+        .label { font-weight: bold; color: #334155; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Prescriptions</h1>
+
+        {% for prescription in prescriptions %}
+            <div class="card">
+                <p><span class="label">Diagnosis:</span> {{ prescription.diagnosis }}</p>
+                <p><span class="label">Doctor:</span>
+                    {% if prescription.doctor %}
+                        Dr. {{ prescription.doctor.name }}
+                    {% else %}
+                        Not specified
+                    {% endif %}
+                </p>
+                <p><span class="label">Medicines:</span><br>{{ prescription.medicines|linebreaksbr }}</p>
+                <p><span class="label">Instructions:</span><br>{{ prescription.instructions|default:"No instructions provided"|linebreaksbr }}</p>
+                <p><span class="label">Date:</span> {{ prescription.prescribed_date }}</p>
+            </div>
+        {% empty %}
+            <div class="empty">No prescriptions found.</div>
+        {% endfor %}
+    </div>
+</body>
+</html>

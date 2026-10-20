@@ -1,0 +1,666 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f8fbff">
+<title>Smart Healthcare AI</title>
+
+<style>
+:root {
+    --bg: #f8fbff;
+    --text: #252525;
+    --muted: #777;
+    --border: #e5e9ee;
+    --accent: #10a37f;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    margin: 0;
+    font-family: Arial, "Noto Sans Devanagari", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Animated gradient background */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    filter: blur(85px);
+    opacity: .42;
+    pointer-events: none;
+    z-index: 0;
+    animation: healthcareFloat 14s ease-in-out infinite alternate;
+}
+
+body::before {
+    top: 5%;
+    left: -180px;
+    background: radial-gradient(circle, #83ead2, #c7f5e9 45%, transparent 72%);
+}
+
+body::after {
+    right: -180px;
+    bottom: 0;
+    background: radial-gradient(circle, #9ebaff, #dce6ff 45%, transparent 72%);
+    animation-delay: -7s;
+}
+
+/* Floating medical symbols */
+.bg-symbol {
+    position: fixed;
+    z-index: 0;
+    pointer-events: none;
+    opacity: .15;
+    color: #10a37f;
+    font-size: 36px;
+    animation: symbolFloat 9s ease-in-out infinite;
+}
+
+.symbol-one { top: 20%; left: 7%; }
+.symbol-two { top: 38%; right: 8%; animation-delay: -3s; }
+.symbol-three { bottom: 19%; left: 12%; animation-delay: -5s; }
+.symbol-four { bottom: 28%; right: 13%; animation-delay: -2s; }
+
+.app {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.topbar {
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: rgba(255,255,255,.84);
+    border-bottom: 1px solid rgba(229,229,229,.8);
+    backdrop-filter: blur(16px);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.logo {
+    width: 39px;
+    height: 39px;
+    display: grid;
+    place-items: center;
+    border-radius: 13px;
+    background: #e4f7ef;
+    font-size: 22px;
+    box-shadow: 0 4px 14px rgba(16,163,127,.12);
+    animation: logoPulse 3s ease-in-out infinite;
+}
+
+.top-label {
+    color: var(--muted);
+    font-size: 12px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,.75);
+}
+
+/* Main content */
+main {
+    width: 100%;
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 38px 24px 24px;
+    flex: 1;
+}
+
+.welcome {
+    text-align: center;
+    margin: 35px auto 34px;
+    animation: fadeUp .7s ease both;
+}
+
+.welcome-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 18px;
+    display: grid;
+    place-items: center;
+    border-radius: 24px;
+    font-size: 38px;
+    color: #087c61;
+    background: linear-gradient(135deg, #dcfff2, #e4eaff);
+    box-shadow: 0 10px 35px rgba(16,163,127,.12);
+    animation: iconFloat 4s ease-in-out infinite;
+}
+
+h1 {
+    font-size: clamp(27px, 5vw, 36px);
+    letter-spacing: -1px;
+    margin: 0 0 13px;
+}
+
+.welcome p {
+    color: var(--muted);
+    line-height: 1.8;
+    font-size: 15px;
+    margin: 0;
+}
+
+/* Suggestion cards */
+.suggestions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 25px 0 35px;
+}
+
+.suggestion {
+    text-align: left;
+    padding: 17px;
+    background: rgba(255,255,255,.82);
+    border: 1px solid var(--border);
+    border-radius: 17px;
+    cursor: pointer;
+    font: inherit;
+    transition: background .25s, border-color .25s,
+                transform .25s, box-shadow .25s;
+    animation: fadeUp .6s ease both;
+}
+
+.suggestion:nth-child(2) { animation-delay: .08s; }
+.suggestion:nth-child(3) { animation-delay: .16s; }
+.suggestion:nth-child(4) { animation-delay: .24s; }
+
+.suggestion:hover {
+    background: #fff;
+    border-color: #9edbc9;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(16,163,127,.10);
+}
+
+.suggestion strong {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 14px;
+}
+
+.suggestion span {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* Conversation */
+.chat {
+    margin: 0 auto 24px;
+    width: 100%;
+}
+
+.turn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin: 26px 0;
+    animation: fadeUp .35s ease both;
+}
+
+.user-message {
+    max-width: 82%;
+    background: rgba(236,239,242,.92);
+    padding: 13px 18px;
+    border-radius: 20px;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.assistant-message {
+    width: 100%;
+    margin-top: 22px;
+    line-height: 1.9;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    animation: fadeUp .55s ease both;
+}
+
+.assistant-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.mini-logo {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e3f6ee;
+    color: #087c61;
+}
+
+/* Animated ECG line */
+.ecg-wrap {
+    width: 100%;
+    max-width: 260px;
+    height: 36px;
+    margin: 12px 0;
+    overflow: hidden;
+    opacity: .75;
+}
+
+.ecg {
+    width: 200%;
+    height: 36px;
+    animation: ecgMove 4s linear infinite;
+}
+
+.ecg path {
+    fill: none;
+    stroke: #10a37f;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Bottom message composer */
+.composer-wrap {
+    position: sticky;
+    bottom: 0;
+    padding: 16px 20px 12px;
+    background: linear-gradient(
+        to bottom,
+        rgba(248,251,255,.10),
+        rgba(248,251,255,.93) 25%,
+        #f8fbff
+    );
+    backdrop-filter: blur(5px);
+}
+
+.composer {
+    max-width: 800px;
+    margin: 0 auto;
+    border: 1px solid #d8dfe3;
+    border-radius: 27px;
+    padding: 12px 13px 12px 20px;
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    background: rgba(255,255,255,.94);
+    box-shadow: 0 6px 25px rgba(31,57,73,.08);
+    transition: border-color .25s, box-shadow .25s, transform .25s;
+}
+
+.composer:focus-within {
+    border-color: #8dcfba;
+    box-shadow: 0 8px 30px rgba(16,163,127,.12);
+    transform: translateY(-2px);
+}
+
+textarea {
+    flex: 1;
+    min-width: 0;
+    max-height: 180px;
+    min-height: 32px;
+    resize: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 4px 0;
+}
+
+textarea::placeholder { color: #929292; }
+
+.send {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: #202020;
+    color: #fff;
+    font-size: 23px;
+    cursor: pointer;
+    transition: transform .2s, background .2s;
+}
+
+.send:hover {
+    background: var(--accent);
+    transform: scale(1.08) rotate(-5deg);
+}
+
+.send:active { transform: scale(.93); }
+
+.send:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
+.hint {
+    max-width: 800px;
+    margin: 10px auto 0;
+    text-align: center;
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--muted);
+}
+
+/* Thinking animation */
+.typing {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 15px 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.typing.active { display: flex; }
+
+.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1s infinite ease-in-out;
+}
+
+.dot:nth-child(2) { animation-delay: .15s; }
+.dot:nth-child(3) { animation-delay: .3s; }
+
+.disclaimer {
+    max-width: 800px;
+    margin: 12px auto 0;
+    color: #858585;
+    font-size: 11px;
+    line-height: 1.7;
+    text-align: center;
+}
+
+.footer {
+    padding: 15px;
+    text-align: center;
+    border-top: 1px solid rgba(229,229,229,.7);
+    background: rgba(255,255,255,.45);
+}
+
+.footer a {
+    color: #555;
+    text-decoration: none;
+    font-size: 12px;
+    transition: color .2s;
+}
+
+.footer a:hover { color: var(--accent); }
+
+/* Keyframes */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0%, 60%, 100% { opacity: .35; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-4px); }
+}
+
+@keyframes healthcareFloat {
+    0% { transform: translate3d(0,0,0) scale(.9); }
+    50% { transform: translate3d(65px,35px,0) scale(1.12); }
+    100% { transform: translate3d(-20px,75px,0) scale(1); }
+}
+
+@keyframes symbolFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-22px) rotate(12deg); }
+}
+
+@keyframes iconFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+}
+
+@keyframes logoPulse {
+    0%, 100% { box-shadow: 0 4px 14px rgba(16,163,127,.12); }
+    50% { box-shadow: 0 4px 24px rgba(16,163,127,.30); }
+}
+
+@keyframes ecgMove {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+/* Mobile responsive */
+@media (max-width: 600px) {
+    .topbar { padding: 0 15px; height: 58px; }
+    .brand { font-size: 15px; }
+    .top-label { font-size: 10px; padding: 7px 9px; }
+    main { padding: 22px 16px; }
+    .welcome { margin: 28px auto; }
+    .suggestions { grid-template-columns: 1fr; gap: 9px; }
+    .suggestion { padding: 14px; }
+    .user-message { max-width: 92%; }
+    .composer-wrap { padding: 12px 12px 8px; }
+    .composer { padding-left: 15px; }
+    .bg-symbol { font-size: 25px; opacity: .10; }
+    body::before, body::after {
+        width: 280px;
+        height: 280px;
+        filter: blur(65px);
+    }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- Floating background symbols -->
+<div class="bg-symbol symbol-one" aria-hidden="true">✚</div>
+<div class="bg-symbol symbol-two" aria-hidden="true">♡</div>
+<div class="bg-symbol symbol-three" aria-hidden="true">✚</div>
+<div class="bg-symbol symbol-four" aria-hidden="true">＋</div>
+
+<div class="app">
+
+    <header class="topbar">
+        <div class="brand">
+            <div class="logo">🩺</div>
+            <span>Smart Healthcare</span>
+        </div>
+        <span class="top-label">AI Health Assistant</span>
+    </header>
+
+    <main>
+        {% if not answer and not question %}
+        <section class="welcome" id="welcome">
+            <div class="welcome-icon">✳</div>
+            <h1>How can I help you today?</h1>
+            <p>
+                तुमचे आरोग्यविषयक प्रश्न विचारा.<br>
+                Ask your health questions in English or Marathi.
+            </p>
+
+            <!-- ECG animation -->
+            <div class="ecg-wrap" style="margin:18px auto 0;">
+                <svg class="ecg" viewBox="0 0 520 36"
+                     xmlns="http://www.w3.org/2000/svg"
+                     aria-hidden="true">
+                    <path d="M0 18 H70 L85 18 L95 8 L105 29 L116 3 L129 18 H175 L190 18 L200 11 L210 25 L220 18 H260 H330 L345 18 L355 8 L365 29 L376 3 L389 18 H435 L450 18 L460 11 L470 25 L480 18 H520"/>
+                </svg>
+            </div>
+        </section>
+
+        <div class="suggestions" id="suggestions">
+            <button class="suggestion" type="button"
+                data-prompt="What are common causes of a headache?">
+                <strong>🤕 Headache information</strong>
+                <span>Learn about common causes of headaches.</span>
+            </button>
+
+            <button class="suggestion" type="button"
+                data-prompt="What are general ways to stay hydrated?">
+                <strong>💧 Healthy habits</strong>
+                <span>Get general wellness information.</span>
+            </button>
+
+            <button class="suggestion" type="button"
+                data-prompt="ताप आल्यावर कोणती काळजी घ्यावी?">
+                <strong>🌡️ तापाची काळजी</strong>
+                <span>ताप आल्यावर घ्यायची सामान्य काळजी जाणून घ्या.</span>
+            </button>
+
+            <button class="suggestion" type="button"
+                data-prompt="When should I consult a doctor?">
+                <strong>🩺 When to see a doctor</strong>
+                <span>Understand when professional advice is important.</span>
+            </button>
+        </div>
+        {% endif %}
+
+        {% if question or answer %}
+        <section class="chat" aria-live="polite">
+            {% if question %}
+            <div class="turn">
+                <div class="user-message">{{ question }}</div>
+            </div>
+            {% endif %}
+
+            {% if answer %}
+            <div class="assistant-message">
+                <div class="assistant-label">
+                    <span class="mini-logo">✳</span>
+                    <span>Smart Healthcare AI</span>
+                </div>
+                {{ answer }}
+            </div>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        <div class="typing" id="typing" role="status">
+            <span>AI is thinking</span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </div>
+    </main>
+
+    <div class="composer-wrap">
+        <form method="post" id="chat-form" class="composer">
+            {% csrf_token %}
+
+            <textarea
+                id="question"
+                name="question"
+                rows="1"
+                maxlength="3000"
+                placeholder="Message Smart Healthcare..."
+                aria-label="Your health question"
+                required
+            >{{ question }}</textarea>
+
+            <button class="send" id="send" type="submit"
+                aria-label="Send question">↑</button>
+        </form>
+
+        <div class="hint">
+            Enter to send · Shift + Enter for a new line
+        </div>
+
+        <div class="disclaimer">
+            General health information only, not a medical diagnosis.
+            For emergencies in India, call 112.<br>
+            सामान्य माहिती; वैद्यकीय निदान नाही.
+        </div>
+    </div>
+
+    <footer class="footer">
+        <a href="/">← Back to Home / मुख्य पृष्ठावर जा</a>
+    </footer>
+
+</div>
+
+<script>
+const textarea = document.getElementById("question");
+const form = document.getElementById("chat-form");
+const typing = document.getElementById("typing");
+const send = document.getElementById("send");
+
+function resizeInput() {
+    textarea.style.height = "auto";
+    textarea.style.height =
+        Math.min(textarea.scrollHeight, 180) + "px";
+}
+
+textarea.addEventListener("input", resizeInput);
+resizeInput();
+
+document.querySelectorAll("[data-prompt]").forEach(button => {
+    button.addEventListener("click", () => {
+        textarea.value = button.dataset.prompt;
+        resizeInput();
+        textarea.focus();
+    });
+});
+
+textarea.addEventListener("keydown", event => {
+    if (event.key === "Enter" &&
+        !event.shiftKey &&
+        !event.isComposing) {
+        event.preventDefault();
+        if (textarea.value.trim()) {
+            form.requestSubmit();
+        }
+    }
+});
+
+form.addEventListener("submit", () => {
+    if (!textarea.value.trim()) return;
+
+    send.disabled = true;
+    send.textContent = "…";
+    typing.classList.add("active");
+});
+</script>
+
+</body>
+</html>

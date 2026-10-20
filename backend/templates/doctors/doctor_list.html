@@ -1,0 +1,276 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Available Doctors | Smart Healthcare</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            font-family: Arial, sans-serif;
+            background: #f3f7fb;
+            color: #243247;
+        }
+
+        h1, h2 {
+            color: #087f8c;
+            text-align: center;
+        }
+
+        .doctor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .doctor-card {
+            background: white;
+            padding: 20px;
+            border-radius: 14px;
+            box-shadow: 0 5px 18px rgba(28, 54, 80, 0.08);
+            border: 1px solid #e5edf3;
+            border-top: 4px solid #087f8c;
+            overflow-wrap: anywhere;
+            text-align: center;
+            transition: transform 0.2s ease,
+                        box-shadow 0.2s ease;
+        }
+
+        .doctor-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 9px 24px rgba(28, 54, 80, 0.13);
+        }
+
+        /* Doctor Photo */
+        .doctor-photo {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            object-position: center top;
+            display: block;
+            border-radius: 10px;
+            margin: 0 auto 18px;
+            background: #eef3f7;
+        }
+
+        .photo-placeholder {
+            width: 150px;
+            height: 150px;
+            border-radius: 10px;
+            background: #e0f2f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin: 0 auto 18px;
+            color: #087f8c;
+            font-weight: 600;
+            box-sizing: border-box;
+        }
+
+        /* Doctor Name */
+        .doctor-card h3 {
+            color: #087f8c;
+            margin: 0 0 18px;
+            font-size: 21px;
+        }
+
+        /* Information Rows */
+        .info-row {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 12px 0;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .info-label {
+            font-weight: bold;
+        }
+
+        .info-value {
+            overflow-wrap: anywhere;
+        }
+
+        /* Consultation Fee */
+        .fee {
+            color: #16804a;
+            font-weight: bold;
+            font-size: 17px;
+            margin: 14px 0;
+            text-align: center;
+        }
+
+        /* Clinic Details */
+        .clinic-info {
+            background: #f3f7fb;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .clinic-info h4 {
+            color: #087f8c;
+            margin: 5px 0 12px;
+            font-size: 17px;
+        }
+
+        /* About Doctor */
+        .about {
+            margin-top: 15px;
+            color: #526274;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        /* Back to Home */
+        .back-link {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        a {
+            color: #087f8c;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .doctor-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .doctor-card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Smart Healthcare</h1>
+    <h2>Available Doctors</h2>
+
+    <div class="doctor-grid">
+
+        {% for doctor in doctors %}
+
+            <div class="doctor-card">
+
+                <!-- Doctor Photo -->
+                {% if doctor.photo %}
+                    <img
+                        src="{{ doctor.photo.url }}"
+                        alt="Dr. {{ doctor.name }}"
+                        class="doctor-photo"
+                    >
+                {% else %}
+                    <div class="photo-placeholder">
+                        Doctor Photo
+                    </div>
+                {% endif %}
+
+                <!-- Doctor Name -->
+                <h3>Dr. {{ doctor.name }}</h3>
+
+                <!-- Specialization -->
+                <p class="info-row">
+                    <span class="info-label">Specialization:</span>
+                    <span class="info-value">
+                        {{ doctor.specialization }}
+                    </span>
+                </p>
+
+                <!-- Qualification -->
+                <p class="info-row">
+                    <span class="info-label">Qualification:</span>
+                    <span class="info-value">
+                        {{ doctor.qualification }}
+                    </span>
+                </p>
+
+                <!-- Experience -->
+                <p class="info-row">
+                    <span class="info-label">Experience:</span>
+                    <span class="info-value">
+                        {{ doctor.experience_years }} years
+                    </span>
+                </p>
+
+                <!-- Consultation Fee -->
+                <p class="fee">
+                    Consultation Fee: ₹{{ doctor.consultation_fee }}
+                </p>
+
+                <!-- Clinic Information -->
+                {% if doctor.clinic_name or doctor.clinic_address %}
+
+                    <div class="clinic-info">
+
+                        <h4>Clinic Details</h4>
+
+                        {% if doctor.clinic_name %}
+                            <p class="info-row">
+                                <span class="info-label">Clinic:</span>
+                                <span class="info-value">
+                                    {{ doctor.clinic_name }}
+                                </span>
+                            </p>
+                        {% endif %}
+
+                        {% if doctor.clinic_address %}
+                            <p class="info-row">
+                                <span class="info-label">Address:</span>
+                                <span class="info-value">
+                                    {{ doctor.clinic_address|linebreaksbr }}
+                                </span>
+                            </p>
+                        {% endif %}
+
+                    </div>
+
+                {% endif %}
+
+                <!-- About Doctor -->
+                {% if doctor.about %}
+                    <p class="about">
+                        {{ doctor.about }}
+                    </p>
+                {% endif %}
+
+            </div>
+
+        {% empty %}
+
+            <p>No doctors are currently available.</p>
+
+        {% endfor %}
+
+    </div>
+
+    <div class="back-link">
+        <a href="/">Back to Home</a>
+    </div>
+
+</body>
+</html>
+```
