@@ -18,22 +18,25 @@ def register_view(request):
         return redirect("dashboard")
 
     if request.method == "POST":
-        username = request.POST.get("username", "").strip()
-        email = request.POST.get("email", "").strip()
+        full_name = request.POST.get("full_name", "").strip()
+        email = request.POST.get("email", "").strip().lower()
         password = request.POST.get("password", "")
         confirm_password = request.POST.get("confirm_password", "")
 
-        if not username or not email or not password:
+        if not all([full_name, email, password, confirm_password]):
             messages.error(request, "Please fill in all required fields.")
         elif password != confirm_password:
             messages.error(request, "Passwords do not match.")
-        elif User.objects.filter(username=username).exists():
-            messages.error(request, "Username already exists.")
-        elif User.objects.filter(email=email).exists():
+        elif User.objects.filter(email__iexact=email).exists():
             messages.error(request, "Email already exists.")
         else:
+            username = email
+            first_name, _, last_name = full_name.partition(" ")
+
             User.objects.create_user(
                 username=username,
+                first_name=first_name,
+                last_name=last_name,
                 email=email,
                 password=password,
             )
@@ -49,20 +52,23 @@ def login_view(request):
         return redirect("dashboard")
 
     if request.method == "POST":
-        username = request.POST.get("username", "").strip()
+        email = request.POST.get("email", "").strip().lower()
         password = request.POST.get("password", "")
+        user_obj = User.objects.filter(email__iexact=email).first()
 
-        user = authenticate(
-            request,
-            username=username,
-            password=password,
-        )
+        user = None
+        if user_obj:
+            user = authenticate(
+                request,
+                username=user_obj.username,
+                password=password,
+            )
 
         if user is not None:
             login(request, user)
             return redirect("dashboard")
 
-        messages.error(request, "Invalid username or password.")
+        messages.error(request, "Invalid email or password.")
 
     return render(request, "accounts/login.html")
 
@@ -259,29 +265,3 @@ def download_medical_record_view(request, record_id):
         as_attachment=True,
         filename=Path(record.file.name).name,
     )
-
-def login_view(request):
-    if request.user.is_authenticated:
-        return redirect("dashboard")
-
-    if request.method == "POST":
-        email = request.POST.get("email", "").strip()
-        password = request.POST.get("password", "")
-
-        user_obj = User.objects.filter(email__iexact=email).first()
-
-        user = None
-        if user_obj:
-            user = authenticate(
-                request,
-                username=user_obj.username,
-                password=password,
-            )
-
-        if user is not None:
-            login(request, user)
-            return redirect("dashboard")
-
-        messages.error(request, "Invalid email or password.")
-
-    return render(request, "accounts/login.html")
