@@ -259,3 +259,29 @@ def download_medical_record_view(request, record_id):
         as_attachment=True,
         filename=Path(record.file.name).name,
     )
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "")
+
+        user_obj = User.objects.filter(email__iexact=email).first()
+
+        user = None
+        if user_obj:
+            user = authenticate(
+                request,
+                username=user_obj.username,
+                password=password,
+            )
+
+        if user is not None:
+            login(request, user)
+            return redirect("dashboard")
+
+        messages.error(request, "Invalid email or password.")
+
+    return render(request, "accounts/login.html")
