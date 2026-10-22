@@ -1,10 +1,16 @@
-﻿import logging
+﻿
+import logging
 import os
 
 import requests
 from django.shortcuts import render
 
 logger = logging.getLogger(__name__)
+
+GEMINI_API_URL = (
+    "https://generativelanguage.googleapis.com/v1beta/"
+    "models/{model}:generateContent"
+)
 
 SYSTEM_PROMPT = """
 You are the AI Health Assistant for a Smart Healthcare Platform.
@@ -27,37 +33,84 @@ Medical safety:
 """
 
 
-def ask_local_ollama(messages):
-    """Send a chat request to the token-protected local Ollama proxy."""
-    ollama_host = os.environ.get("OLLAMA_HOST", "").rstrip("/")
-    proxy_token = os.environ.get("OLLAMA_PROXY_TOKEN", "")
+def ask_gemini(messages):
+    """Send chat history to Google's hosted Gemini API."""
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    model = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip()
 
-    if not ollama_host or not proxy_token:
-        raise RuntimeError(
-            "OLLAMA_HOST or OLLAMA_PROXY_TOKEN environment variable is missing."
-        )
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY is missing.")
+
+    contents = []
+
+    for message in messages:
+        role = message.get("role")
+        content = message.get("content", "")
+
+        if role == "system":
+            continue
+
+        if role == "assistant":
+            role = "model"
+        elif role != "user":
+            continue
+
+        if not isinstance(content, str) or not content.strip():
+            continue
+
+        contents.append({
+            "role": role,
+            "parts": [{"text": content}],
+        })
+
+    if not contents:
+        raise ValueError("No valid messages to send.")
 
     response = requests.post(
-        f"{ollama_host}/api/chat",
+        GEMINI_API_URL.format(model=model),
         headers={
-            "Authorization": f"Bearer {proxy_token}",
+            "x-goog-api-key": api_key,
             "Content-Type": "application/json",
         },
         json={
-            "model": "gemma3:1b",
-            "messages": messages,
-            "stream": False,
+            "systemInstruction": {
+                "parts": [{"text": SYSTEM_PROMPT}]
+            },
+            "contents": contents,
+            "generationConfig": {
+                "temperature": 0.4,
+                "maxOutputTokens": 800,
+            },
         },
-        timeout=120,
+        timeout=60,
     )
 
-    response.raise_for_status()
+    if not response.ok:
+        # Log status and response details, but never log the API key.
+        logger.error(
+            "Gemini API error: HTTP %s; response: %s",
+            response.status_code,
+            response.text[:1000],
+        )
+        response.raise_for_status()
+
     data = response.json()
+    candidates = data.get("candidates", [])
 
-    if not isinstance(data, dict) or not isinstance(data.get("message"), dict):
-        raise ValueError("Invalid response received from the Ollama proxy.")
+    if not candidates:
+        raise ValueError("Gemini returned no response candidates.")
 
-    return data
+    parts = candidates[0].get("content", {}).get("parts", [])
+    answer = "\n".join(
+        part["text"]
+        for part in parts
+        if isinstance(part.get("text"), str)
+    ).strip()
+
+    if not answer:
+        raise ValueError("Gemini returned an empty answer.")
+
+    return answer
 
 
 def health_assistant_view(request):
@@ -73,7 +126,6 @@ def health_assistant_view(request):
         else:
             history = request.session.get("health_chat_history", [])
 
-            # Keep only valid user/assistant messages from the session.
             if not isinstance(history, list):
                 history = []
 
@@ -92,41 +144,35 @@ def health_assistant_view(request):
             ]
 
             try:
-                response = ask_local_ollama(messages)
-                answer = response["message"]["content"].strip()
+                answer = ask_gemini(messages)
 
-                if not answer:
-                    answer = (
-                        "माफ करा, उत्तर मिळाले नाही. कृपया पुन्हा प्रयत्न करा."
-                    )
-                else:
-                    history.extend([
-                        {"role": "user", "content": question},
-                        {"role": "assistant", "content": answer},
-                    ])
+                history.extend([
+                    {"role": "user", "content": question},
+                    {"role": "assistant", "content": answer},
+                ])
 
-                    request.session["health_chat_history"] = history[-10:]
-                    request.session.modified = True
+                request.session["health_chat_history"] = history[-10:]
+                request.session.modified = True
 
             except requests.Timeout:
-                logger.warning("Local Ollama request timed out.")
+                logger.warning("Gemini request timed out.")
                 answer = (
                     "माफ करा, AI उत्तर देण्यासाठी जास्त वेळ घेत आहे. "
                     "कृपया थोड्या वेळाने पुन्हा प्रयत्न करा."
                 )
 
             except requests.RequestException:
-                logger.exception("Could not connect to the Ollama proxy.")
+                logger.exception("Could not connect to Gemini API.")
                 answer = (
                     "माफ करा, AI सेवेशी संपर्क होऊ शकला नाही. "
-                    "Ollama, proxy आणि Cloudflare Tunnel चालू आहेत का ते तपासा."
+                    "कृपया काही वेळाने पुन्हा प्रयत्न करा."
                 )
 
             except (RuntimeError, ValueError, KeyError):
-                logger.exception("Ollama configuration or response error.")
+                logger.exception("Gemini configuration or response error.")
                 answer = (
                     "माफ करा, AI configuration मध्ये समस्या आली आहे. "
-                    "कृपया administrator शी संपर्क साधा."
+                    "Render Environment आणि deployment logs तपासा."
                 )
 
             except Exception:
