@@ -100,8 +100,9 @@ def ask_gemini(messages):
                 url,
                 headers=headers,
                 json=payload,
-                timeout=60,
-            )
+                timeout=(5, 20),
+)
+            
         except requests.RequestException:
             # Retry temporary connection errors.
             if attempt < MAX_ATTEMPTS - 1:
