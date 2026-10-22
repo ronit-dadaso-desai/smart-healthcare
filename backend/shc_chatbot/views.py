@@ -1,6 +1,7 @@
 ﻿
 import logging
 import os
+import time
 
 import requests
 from django.shortcuts import render
@@ -32,14 +33,21 @@ Medical safety:
 - Treat health information as sensitive.
 """
 
+RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
+MAX_ATTEMPTS = 3
+
 
 def ask_gemini(messages):
-    """Send chat history to Google's hosted Gemini API."""
+    """Send conversation history to Google's hosted Gemini API."""
+
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     model = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash").strip()
 
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY is missing.")
+
+    if not model:
+        raise RuntimeError("GEMINI_MODEL is missing.")
 
     contents = []
 
@@ -66,27 +74,75 @@ def ask_gemini(messages):
     if not contents:
         raise ValueError("No valid messages to send.")
 
-    response = requests.post(
-        GEMINI_API_URL.format(model=model),
-        headers={
-            "x-goog-api-key": api_key,
-            "Content-Type": "application/json",
+    url = GEMINI_API_URL.format(model=model)
+
+    headers = {
+        "x-goog-api-key": api_key,
+        "Content-Type": "application/json",
+    }
+
+    payload = {
+        "systemInstruction": {
+            "parts": [{"text": SYSTEM_PROMPT}]
         },
-        json={
-            "systemInstruction": {
-                "parts": [{"text": SYSTEM_PROMPT}]
-            },
-            "contents": contents,
-            "generationConfig": {
-                "temperature": 0.4,
-                "maxOutputTokens": 800,
-            },
+        "contents": contents,
+        "generationConfig": {
+            "temperature": 0.4,
+            "maxOutputTokens": 800,
         },
-        timeout=60,
-    )
+    }
+
+    response = None
+
+    for attempt in range(MAX_ATTEMPTS):
+        try:
+            response = requests.post(
+                url,
+                headers=headers,
+                json=payload,
+                timeout=60,
+            )
+        except requests.RequestException:
+            # Retry temporary connection errors.
+            if attempt < MAX_ATTEMPTS - 1:
+                wait_seconds = 2 ** (attempt + 1)
+                logger.warning(
+                    "Gemini connection failed; retrying in %s seconds "
+                    "(attempt %s/%s).",
+                    wait_seconds,
+                    attempt + 1,
+                    MAX_ATTEMPTS,
+                )
+                time.sleep(wait_seconds)
+                continue
+            raise
+
+        if (
+            response.status_code in RETRYABLE_STATUS_CODES
+            and attempt < MAX_ATTEMPTS - 1
+        ):
+            wait_seconds = 2 ** (attempt + 1)
+
+            logger.warning(
+                "Gemini returned HTTP %s; retrying in %s seconds "
+                "(attempt %s/%s).",
+                response.status_code,
+                wait_seconds,
+                attempt + 1,
+                MAX_ATTEMPTS,
+            )
+
+            response.close()
+            time.sleep(wait_seconds)
+            continue
+
+        break
+
+    if response is None:
+        raise RuntimeError("Gemini did not return a response.")
 
     if not response.ok:
-        # Log status and response details, but never log the API key.
+        # Never log the API key.
         logger.error(
             "Gemini API error: HTTP %s; response: %s",
             response.status_code,
@@ -98,9 +154,12 @@ def ask_gemini(messages):
     candidates = data.get("candidates", [])
 
     if not candidates:
+        feedback = data.get("promptFeedback", {})
+        logger.warning("Gemini returned no candidates: %s", feedback)
         raise ValueError("Gemini returned no response candidates.")
 
     parts = candidates[0].get("content", {}).get("parts", [])
+
     answer = "\n".join(
         part["text"]
         for part in parts
@@ -121,7 +180,9 @@ def health_assistant_view(request):
         question = request.POST.get("question", "").strip()
 
         if not question:
-            answer = "कृपया तुमचा प्रश्न लिहा. / Please enter your question."
+            answer = (
+                "कृपया तुमचा प्रश्न लिहा. / Please enter your question."
+            )
 
         else:
             history = request.session.get("health_chat_history", [])
@@ -138,7 +199,6 @@ def health_assistant_view(request):
             ][-10:]
 
             messages = [
-                {"role": "system", "content": SYSTEM_PROMPT},
                 *history,
                 {"role": "user", "content": question},
             ]
@@ -189,3 +249,4 @@ def health_assistant_view(request):
             "question": question,
         },
     )
+
